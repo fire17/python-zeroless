@@ -77,9 +77,14 @@ def _recv(sock):
                 print(" ::: ZMQ _recv Caught:", e) 
                 caught_exceptions.add(e)
                 # traceback.print_exc()
+            else:
+                # Repeating Error
+                # This would be a good place to do self.recover() or someway to reconnect and recover the socket and request
+                pass
         finally:
-            # This would be a good place to do self.recover() or someway to reconnect and recover the socket and request
-            pass
+            if run_recv:
+                # potential place to do self.recover() or someway to reconnect and recover the socket and request
+                pass
 
 
 class Sock:
