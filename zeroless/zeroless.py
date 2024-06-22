@@ -60,10 +60,27 @@ def _bind_zmq_sock(sock, port):
         raise ValueError(error)
 
 def _recv(sock):
-    while True:
-        frames = sock.recv_multipart()
-        log.debug('Receiving: {0}'.format(frames))
-        yield frames if len(frames) > 1 else frames[0]
+    run_recv = True
+    caught_exceptions = set()
+    while run_recv:
+        try:
+            frames = sock.recv_multipart()
+            log.debug('Receiving: {0}'.format(frames))
+            yield frames if len(frames) > 1 else frames[0]
+        except (SystemExit, KeyboardInterrupt):
+            print("ZMQ _recv Caught: Keyboard Interrupt, EXITING")
+            run_recv = False
+        except Exception as e:
+            # This insures that you don't infinitely log and print the same error in a row, which can sometimes happen
+            if e not in caught_exceptions:
+                log.exception(f" ZMQ _recv Error: {e}")
+                print(" ::: ZMQ _recv Caught:", e) 
+                caught_exceptions.add(e)
+                # traceback.print_exc()
+        finally:
+            # This would be a good place to do self.recover() or someway to reconnect and recover the socket and request
+            pass
+
 
 class Sock:
     def __init__(self):
